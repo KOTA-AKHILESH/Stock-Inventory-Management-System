@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+backend/users.db
+.venv/
+venv/
+.env
+.vscode/
