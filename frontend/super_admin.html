@@ -1,19 +1,279 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Super Admin Dashboard</title>
+
   <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
-  <div class="dashboard">
-    <h1>Super Admin Dashboard</h1>
-    <p id="welcome"></p>
-    <p>You have full system access.</p>
-    <button onclick="logout()">Logout</button>
+
+  <div class="admin-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div>
+
+        <div class="sidebar-title">
+          <h2>Inventory</h2>
+          <p>Super Admin Portal</p>
+        </div>
+
+        <div class="sidebar-menu">
+
+          <button
+            class="menu-button active-menu"
+            onclick="showSuperSection('superDashboardSection', this)"
+          >
+            Dashboard
+          </button>
+
+          <button
+            class="menu-button"
+            onclick="showSuperSection('superProductsSection', this)"
+          >
+            Products
+          </button>
+
+          <button
+            class="menu-button"
+            onclick="showSuperSection('superUsersSection', this)"
+          >
+            Users
+          </button>
+
+          <button
+            class="menu-button"
+            onclick="showSuperSection('superLowStockSection', this)"
+          >
+            Low Stock
+          </button>
+
+          <button
+            class="menu-button"
+            onclick="showSuperSection('superHighStockSection', this)"
+          >
+            High Stock
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <button
+        class="logout-button"
+        onclick="superAdminLogout()"
+      >
+        Logout
+      </button>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+      <header class="topbar">
+
+        <div>
+          <h2>Stock Inventory Management</h2>
+          <p id="welcome"></p>
+        </div>
+
+      </header>
+
+
+      <!-- DASHBOARD -->
+      <section
+        id="superDashboardSection"
+        class="content-section active-section"
+      >
+
+        <div class="section-heading">
+          <h1>Super Admin Dashboard</h1>
+          <p>Complete system overview</p>
+        </div>
+
+
+        <div class="dashboard-cards">
+
+          <div class="card">
+            <h3>Total Products</h3>
+            <p id="superTotalProducts">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Total Stock</h3>
+            <p id="superTotalStock">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Total Users</h3>
+            <p id="superTotalUsers">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Low Stock</h3>
+            <p id="superLowStock">0</p>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PRODUCTS -->
+      <section
+        id="superProductsSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+          <h1>Products</h1>
+          <p>View all inventory products</p>
+        </div>
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Supplier</th>
+              </tr>
+            </thead>
+
+            <tbody id="superProductBody">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- USERS -->
+      <section
+        id="superUsersSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+          <h1>Users</h1>
+          <p>View registered users and their roles</p>
+        </div>
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+
+            <tbody id="superUserBody">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- LOW STOCK -->
+      <section
+        id="superLowStockSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+          <h1>Low Stock</h1>
+          <p>Products with quantity 5 or below</p>
+        </div>
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Supplier</th>
+              </tr>
+            </thead>
+
+            <tbody id="superLowStockBody">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- HIGH STOCK -->
+      <section
+        id="superHighStockSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+          <h1>High Stock</h1>
+          <p>Products with quantity greater than 20</p>
+        </div>
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Supplier</th>
+              </tr>
+            </thead>
+
+            <tbody id="superHighStockBody">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
 
-  <script src="dashboard.js"></script>
+
+  <script src="super_admin.js"></script>
+
 </body>
+
 </html>
