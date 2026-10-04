@@ -1,19 +1,475 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Admin Dashboard</title>
+
   <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
-  <div class="dashboard">
-    <h1>Admin Dashboard</h1>
-    <p id="welcome"></p>
-    <p>You have administrator access.</p>
-    <button onclick="logout()">Logout</button>
+
+  <div class="admin-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div>
+        <div class="sidebar-title">
+          <h2>Inventory</h2>
+          <p>Admin Portal</p>
+        </div>
+
+        <div class="sidebar-menu">
+
+          <button
+            class="menu-button active-menu"
+            onclick="showSection('dashboardSection', this)"
+          >
+            Dashboard
+          </button>
+
+          <button
+            class="menu-button"
+            onclick="showSection('productsSection', this)"
+          >
+            Products
+          </button>
+
+          <button
+            class="menu-button"
+            onclick="showSection('addProductSection', this)"
+          >
+            Add Product
+          </button>
+
+        </div>
+      </div>
+
+
+      <button
+        class="logout-button"
+        onclick="openLogoutModal()"
+      >
+        Logout
+      </button>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+
+        <div>
+          <h2>Stock Inventory Management</h2>
+          <p id="welcome"></p>
+        </div>
+
+      </header>
+
+
+      <!-- DASHBOARD -->
+      <section
+        id="dashboardSection"
+        class="content-section active-section"
+      >
+
+        <div class="section-heading">
+          <h1>Dashboard</h1>
+          <p>Inventory overview</p>
+        </div>
+
+
+        <div class="dashboard-cards">
+
+          <div class="card">
+            <h3>Total Products</h3>
+            <p id="totalProducts">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Total Stock</h3>
+            <p id="totalStock">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Low Stock</h3>
+            <p id="lowStock">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Inventory Value</h3>
+            <p id="inventoryValue">₹0</p>
+          </div>
+
+        </div>
+
+
+        <div class="welcome-card">
+
+          <h2>Welcome to Admin Portal</h2>
+
+          <p>
+            Use the menu on the left to manage your inventory.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- PRODUCTS -->
+      <section
+        id="productsSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+
+          <h1>Products</h1>
+
+          <p>
+            View, edit and delete products.
+          </p>
+
+        </div>
+
+
+        <div class="table-container">
+
+          <table id="productTable">
+
+            <thead>
+
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Supplier</th>
+                <th>Actions</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="productBody">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- ADD PRODUCT -->
+      <section
+        id="addProductSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+
+          <h1>Add Product</h1>
+
+          <p>
+            Add a new product to your inventory.
+          </p>
+
+        </div>
+
+
+        <div class="form-card">
+
+          <form id="productForm">
+
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label>Product Name</label>
+
+                <input
+                  type="text"
+                  id="productName"
+                  placeholder="Enter product name"
+                  required
+                >
+              </div>
+
+
+              <div class="form-group">
+                <label>Category</label>
+
+                <input
+                  type="text"
+                  id="productCategory"
+                  placeholder="Enter category"
+                  required
+                >
+              </div>
+
+
+              <div class="form-group">
+                <label>Quantity</label>
+
+                <input
+                  type="number"
+                  id="productQuantity"
+                  placeholder="Enter quantity"
+                  min="0"
+                  required
+                >
+              </div>
+
+
+              <div class="form-group">
+                <label>Price</label>
+
+                <input
+                  type="number"
+                  id="productPrice"
+                  placeholder="Enter price"
+                  min="0"
+                  step="0.01"
+                  required
+                >
+              </div>
+
+
+              <div class="form-group">
+                <label>Supplier</label>
+
+                <input
+                  type="text"
+                  id="productSupplier"
+                  placeholder="Enter supplier"
+                  required
+                >
+              </div>
+
+            </div>
+
+
+            <button
+              type="submit"
+              class="primary-button"
+            >
+              Add Product
+            </button>
+
+          </form>
+
+        </div>
+
+      </section>
+
+    </main>
+
   </div>
 
+
+  <!-- EDIT PRODUCT MODAL -->
+  <div
+    id="editModal"
+    class="modal"
+  >
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2>Edit Product</h2>
+
+        <button
+          class="close-button"
+          onclick="closeEditModal()"
+        >
+          ×
+        </button>
+      </div>
+
+
+      <input
+        type="hidden"
+        id="editProductId"
+      >
+
+
+      <div class="form-group">
+
+        <label>Product Name</label>
+
+        <input
+          type="text"
+          id="editProductName"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Category</label>
+
+        <input
+          type="text"
+          id="editProductCategory"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Quantity</label>
+
+        <input
+          type="number"
+          id="editProductQuantity"
+          min="0"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Price</label>
+
+        <input
+          type="number"
+          id="editProductPrice"
+          min="0"
+          step="0.01"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Supplier</label>
+
+        <input
+          type="text"
+          id="editProductSupplier"
+        >
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          class="primary-button"
+          onclick="updateProduct()"
+        >
+          Update Product
+        </button>
+
+        <button
+          class="secondary-button"
+          onclick="closeEditModal()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div
+    id="deleteModal"
+    class="modal"
+  >
+
+    <div class="modal-content small-modal">
+
+      <h2>Delete Product</h2>
+
+      <p>
+        Are you sure you want to delete this product?
+      </p>
+
+      <input
+        type="hidden"
+        id="deleteProductId"
+      >
+
+
+      <div class="modal-actions">
+
+        <button
+          class="danger-button"
+          onclick="confirmDeleteProduct()"
+        >
+          Delete
+        </button>
+
+        <button
+          class="secondary-button"
+          onclick="closeDeleteModal()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- LOGOUT MODAL -->
+  <div
+    id="logoutModal"
+    class="modal"
+  >
+
+    <div class="modal-content small-modal">
+
+      <h2>Logout</h2>
+
+      <p>
+        Are you sure you want to logout?
+      </p>
+
+
+      <div class="modal-actions">
+
+        <button
+          class="danger-button"
+          onclick="confirmLogout()"
+        >
+          Logout
+        </button>
+
+        <button
+          class="secondary-button"
+          onclick="closeLogoutModal()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
   <script src="dashboard.js"></script>
+
 </body>
+
 </html>

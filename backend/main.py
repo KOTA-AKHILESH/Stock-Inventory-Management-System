@@ -36,6 +36,14 @@ class LoginData(BaseModel):
     password: str
 
 
+class ProductData(BaseModel):
+    name: str
+    category: str
+    quantity: int
+    price: float
+    supplier: str
+
+
 def get_connection():
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
@@ -56,6 +64,20 @@ def create_database():
             )
             """
         )
+
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                quantity INTEGER NOT NULL,
+                price REAL NOT NULL,
+                supplier TEXT NOT NULL
+            )
+            """
+        )
+
         connection.commit()
 
 
@@ -81,7 +103,10 @@ def register(data: RegisterData):
     allowed_roles = {"super_admin", "admin", "employee"}
 
     if data.role not in allowed_roles:
-        raise HTTPException(status_code=400, detail="Invalid role")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid role"
+        )
 
     if len(data.password) < 6:
         raise HTTPException(
@@ -107,6 +132,7 @@ def register(data: RegisterData):
                     data.role,
                 ),
             )
+
             connection.commit()
 
     except sqlite3.IntegrityError:
@@ -133,7 +159,11 @@ def login(data: LoginData):
         )
 
     salt = bytes.fromhex(user["salt"])
-    entered_password_hash = hash_password(data.password, salt)
+
+    entered_password_hash = hash_password(
+        data.password,
+        salt
+    )
 
     if entered_password_hash != user["password_hash"]:
         raise HTTPException(
@@ -149,4 +179,93 @@ def login(data: LoginData):
             "email": user["email"],
             "role": user["role"],
         },
+    }
+
+
+@app.post("/products")
+def add_product(data: ProductData):
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO products
+            (name, category, quantity, price, supplier)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                data.name,
+                data.category,
+                data.quantity,
+                data.price,
+                data.supplier,
+            ),
+        )
+
+        connection.commit()
+
+    return {
+        "message": "Product added successfully",
+        "product_id": cursor.lastrowid
+    }
+
+
+@app.get("/products")
+def get_products():
+    with get_connection() as connection:
+        products = connection.execute(
+            "SELECT * FROM products"
+        ).fetchall()
+
+    return [dict(product) for product in products]
+@app.delete("/products/{product_id}")
+def delete_product(product_id: int):
+    with get_connection() as connection:
+        cursor = connection.execute(
+            "DELETE FROM products WHERE id = ?",
+            (product_id,)
+        )
+
+        connection.commit()
+
+    if cursor.rowcount == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return {
+        "message": "Product deleted successfully"
+    }
+@app.put("/products/{product_id}")
+def update_product(product_id: int, data: ProductData):
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            UPDATE products
+            SET name = ?,
+                category = ?,
+                quantity = ?,
+                price = ?,
+                supplier = ?
+            WHERE id = ?
+            """,
+            (
+                data.name,
+                data.category,
+                data.quantity,
+                data.price,
+                data.supplier,
+                product_id,
+            ),
+        )
+
+        connection.commit()
+
+    if cursor.rowcount == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return {
+        "message": "Product updated successfully"
     }
