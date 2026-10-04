@@ -1,19 +1,397 @@
 <!doctype html>
+
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Employee Dashboard</title>
-  <link rel="stylesheet" href="dashboard.css">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Employee Dashboard
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="dashboard.css"
+  >
+
 </head>
+
+
 <body>
-  <div class="dashboard">
-    <h1>Employee Dashboard</h1>
-    <p id="welcome"></p>
-    <p>You have employee access.</p>
-    <button onclick="logout()">Logout</button>
+
+  <div class="admin-container">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+      <div>
+
+        <div class="sidebar-title">
+
+          <h2>
+            Inventory
+          </h2>
+
+          <p>
+            Employee Portal
+          </p>
+
+        </div>
+
+
+        <div class="sidebar-menu">
+
+
+          <button
+            class="menu-button active-menu"
+            onclick="showEmployeeSection(
+              'employeeDashboardSection',
+              this
+            )"
+          >
+            Dashboard
+          </button>
+
+
+          <button
+            class="menu-button"
+            onclick="showEmployeeSection(
+              'employeeStockSection',
+              this
+            )"
+          >
+            Stock
+          </button>
+
+
+          <button
+            class="menu-button"
+            onclick="showEmployeeSection(
+              'employeeLowStockSection',
+              this
+            )"
+          >
+            Low Stock
+          </button>
+
+
+          <button
+            class="menu-button"
+            onclick="showEmployeeSection(
+              'employeeHighStockSection',
+              this
+            )"
+          >
+            High Stock
+          </button>
+
+
+        </div>
+
+      </div>
+
+
+      <button
+        class="logout-button"
+        onclick="employeeLogout()"
+      >
+        Logout
+      </button>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main-content">
+
+
+      <!-- TOP BAR -->
+
+      <header class="topbar">
+
+        <div>
+
+          <h2>
+            Stock Inventory Management
+          </h2>
+
+          <p id="welcome">
+          </p>
+
+        </div>
+
+      </header>
+
+
+      <!-- EMPLOYEE DASHBOARD -->
+
+      <section
+        id="employeeDashboardSection"
+        class="content-section active-section"
+      >
+
+        <div class="section-heading">
+
+          <h1>
+            Employee Dashboard
+          </h1>
+
+          <p>
+            Manage inventory stock
+          </p>
+
+        </div>
+
+
+        <div class="dashboard-cards">
+
+
+          <div class="card">
+
+            <h3>
+              Total Products
+            </h3>
+
+            <p id="employeeTotalProducts">
+              0
+            </p>
+
+          </div>
+
+
+          <div class="card">
+
+            <h3>
+              Total Stock
+            </h3>
+
+            <p id="employeeTotalStock">
+              0
+            </p>
+
+          </div>
+
+
+          <div class="card">
+
+            <h3>
+              Low Stock
+            </h3>
+
+            <p id="employeeLowStock">
+              0
+            </p>
+
+          </div>
+
+
+          <div class="card">
+
+            <h3>
+              Out of Stock
+            </h3>
+
+            <p id="employeeOutOfStock">
+              0
+            </p>
+
+          </div>
+
+
+        </div>
+
+      </section>
+
+
+      <!-- STOCK MANAGEMENT -->
+
+      <section
+        id="employeeStockSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+
+          <h1>
+            Stock Management
+          </h1>
+
+          <p>
+            Increase or decrease product quantity
+          </p>
+
+        </div>
+
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Category</th>
+
+                <th>Quantity</th>
+
+                <th>Supplier</th>
+
+                <th>
+                  Stock Control
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody
+              id="employeeProductBody"
+            >
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- LOW STOCK -->
+
+      <section
+        id="employeeLowStockSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+
+          <h1>
+            Low Stock
+          </h1>
+
+          <p>
+            Products with quantity 5 or below
+          </p>
+
+        </div>
+
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Category</th>
+
+                <th>Quantity</th>
+
+                <th>Supplier</th>
+
+                <th>Status</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody
+              id="lowStockBody"
+            >
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- HIGH STOCK -->
+
+      <section
+        id="employeeHighStockSection"
+        class="content-section"
+      >
+
+        <div class="section-heading">
+
+          <h1>
+            High Stock
+          </h1>
+
+          <p>
+            Products with quantity greater than 20
+          </p>
+
+        </div>
+
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Category</th>
+
+                <th>Quantity</th>
+
+                <th>Supplier</th>
+
+                <th>Status</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody
+              id="highStockBody"
+            >
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
   </div>
 
-  <script src="dashboard.js"></script>
+
+  <script src="employee.js"></script>
+
 </body>
+
 </html>

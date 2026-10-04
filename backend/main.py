@@ -6,9 +6,11 @@ import hashlib
 import secrets
 from pathlib import Path
 
-app = FastAPI(title="Login API")
+
+app = FastAPI(title="Stock Inventory API")
 
 DB_PATH = Path(__file__).with_name("users.db")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,6 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# -------------------------
+# MODELS
+# -------------------------
 
 class RegisterData(BaseModel):
     name: str
@@ -44,6 +50,14 @@ class ProductData(BaseModel):
     supplier: str
 
 
+class QuantityUpdate(BaseModel):
+    change: int
+
+
+# -------------------------
+# DATABASE
+# -------------------------
+
 def get_connection():
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
@@ -52,6 +66,7 @@ def get_connection():
 
 def create_database():
     with get_connection() as connection:
+
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
@@ -93,14 +108,29 @@ def hash_password(password: str, salt: bytes) -> str:
 create_database()
 
 
+# -------------------------
+# HOME
+# -------------------------
+
 @app.get("/")
 def home():
-    return {"message": "Login backend is running"}
+    return {
+        "message": "Stock Inventory backend is running"
+    }
 
+
+# -------------------------
+# REGISTER
+# -------------------------
 
 @app.post("/register")
 def register(data: RegisterData):
-    allowed_roles = {"super_admin", "admin", "employee"}
+
+    allowed_roles = {
+        "super_admin",
+        "admin",
+        "employee"
+    }
 
     if data.role not in allowed_roles:
         raise HTTPException(
@@ -115,13 +145,20 @@ def register(data: RegisterData):
         )
 
     salt = secrets.token_bytes(16)
-    password_hash = hash_password(data.password, salt)
+
+    password_hash = hash_password(
+        data.password,
+        salt
+    )
 
     try:
+
         with get_connection() as connection:
+
             connection.execute(
                 """
-                INSERT INTO users (name, email, password_hash, salt, role)
+                INSERT INTO users
+                (name, email, password_hash, salt, role)
                 VALUES (?, ?, ?, ?, ?)
                 """,
                 (
@@ -136,29 +173,47 @@ def register(data: RegisterData):
             connection.commit()
 
     except sqlite3.IntegrityError:
+
         raise HTTPException(
             status_code=400,
             detail="An account with this email already exists"
         )
 
-    return {"message": "Registration successful"}
+    return {
+        "message": "Registration successful"
+    }
 
+
+# -------------------------
+# LOGIN
+# -------------------------
 
 @app.post("/login")
 def login(data: LoginData):
+
     with get_connection() as connection:
+
         user = connection.execute(
-            "SELECT * FROM users WHERE email = ?",
-            (data.email.lower(),),
+            """
+            SELECT *
+            FROM users
+            WHERE email = ?
+            """,
+            (
+                data.email.lower(),
+            ),
         ).fetchone()
 
     if user is None:
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
         )
 
-    salt = bytes.fromhex(user["salt"])
+    salt = bytes.fromhex(
+        user["salt"]
+    )
 
     entered_password_hash = hash_password(
         data.password,
@@ -166,6 +221,7 @@ def login(data: LoginData):
     )
 
     if entered_password_hash != user["password_hash"]:
+
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
@@ -182,21 +238,45 @@ def login(data: LoginData):
     }
 
 
+# -------------------------
+# ADD PRODUCT
+# -------------------------
+
 @app.post("/products")
 def add_product(data: ProductData):
+
+    if data.quantity < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Quantity cannot be negative"
+        )
+
+    if data.price < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Price cannot be negative"
+        )
+
     with get_connection() as connection:
+
         cursor = connection.execute(
             """
             INSERT INTO products
-            (name, category, quantity, price, supplier)
+            (
+                name,
+                category,
+                quantity,
+                price,
+                supplier
+            )
             VALUES (?, ?, ?, ?, ?)
             """,
             (
-                data.name,
-                data.category,
+                data.name.strip(),
+                data.category.strip(),
                 data.quantity,
                 data.price,
-                data.supplier,
+                data.supplier.strip(),
             ),
         )
 
@@ -208,19 +288,43 @@ def add_product(data: ProductData):
     }
 
 
+# -------------------------
+# GET PRODUCTS
+# -------------------------
+
 @app.get("/products")
 def get_products():
+
     with get_connection() as connection:
+
         products = connection.execute(
-            "SELECT * FROM products"
+            """
+            SELECT *
+            FROM products
+            ORDER BY id ASC
+            """
         ).fetchall()
 
-    return [dict(product) for product in products]
+    return [
+        dict(product)
+        for product in products
+    ]
+
+
+# -------------------------
+# DELETE PRODUCT
+# -------------------------
+
 @app.delete("/products/{product_id}")
 def delete_product(product_id: int):
+
     with get_connection() as connection:
+
         cursor = connection.execute(
-            "DELETE FROM products WHERE id = ?",
+            """
+            DELETE FROM products
+            WHERE id = ?
+            """,
             (product_id,)
         )
 
@@ -235,9 +339,32 @@ def delete_product(product_id: int):
     return {
         "message": "Product deleted successfully"
     }
+
+
+# -------------------------
+# UPDATE FULL PRODUCT
+# -------------------------
+
 @app.put("/products/{product_id}")
-def update_product(product_id: int, data: ProductData):
+def update_product(
+    product_id: int,
+    data: ProductData
+):
+
+    if data.quantity < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Quantity cannot be negative"
+        )
+
+    if data.price < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Price cannot be negative"
+        )
+
     with get_connection() as connection:
+
         cursor = connection.execute(
             """
             UPDATE products
@@ -249,11 +376,11 @@ def update_product(product_id: int, data: ProductData):
             WHERE id = ?
             """,
             (
-                data.name,
-                data.category,
+                data.name.strip(),
+                data.category.strip(),
                 data.quantity,
                 data.price,
-                data.supplier,
+                data.supplier.strip(),
                 product_id,
             ),
         )
@@ -269,3 +396,74 @@ def update_product(product_id: int, data: ProductData):
     return {
         "message": "Product updated successfully"
     }
+
+
+# -------------------------
+# EMPLOYEE QUANTITY UPDATE
+# -------------------------
+
+@app.patch("/products/{product_id}/quantity")
+def update_product_quantity(
+    product_id: int,
+    data: QuantityUpdate
+):
+
+    with get_connection() as connection:
+
+        product = connection.execute(
+            """
+            SELECT *
+            FROM products
+            WHERE id = ?
+            """,
+            (product_id,)
+        ).fetchone()
+
+        if product is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Product not found"
+            )
+
+        new_quantity = (
+            product["quantity"] +
+            data.change
+        )
+
+        if new_quantity < 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Stock quantity cannot be below 0"
+            )
+
+        connection.execute(
+            """
+            UPDATE products
+            SET quantity = ?
+            WHERE id = ?
+            """,
+            (
+                new_quantity,
+                product_id
+            )
+        )
+
+        connection.commit()
+
+    return {
+        "message": "Stock quantity updated",
+        "product_id": product_id,
+        "quantity": new_quantity
+    }
+@app.get("/users")
+def get_users():
+    with get_connection() as connection:
+        users = connection.execute(
+            """
+            SELECT id, name, email, role
+            FROM users
+            ORDER BY id ASC
+            """
+        ).fetchall()
+
+    return [dict(user) for user in users]

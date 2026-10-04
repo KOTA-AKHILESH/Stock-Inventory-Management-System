@@ -3,43 +3,32 @@ const API_URL = "http://127.0.0.1:8000";
 let products = [];
 
 
-// --------------------------
-// CURRENT USER
-// --------------------------
+// ==================================
+// CURRENT ADMIN USER
+// ==================================
 
 const user = JSON.parse(
   localStorage.getItem("user")
 );
 
-
 if (!user) {
-
-  window.location.href =
-    "index.html";
-
+  window.location.href = "index.html";
 }
-
 
 const welcomeElement =
   document.getElementById("welcome");
 
-
 if (welcomeElement && user) {
-
   welcomeElement.textContent =
     `Welcome, ${user.name}`;
-
 }
 
 
-// --------------------------
-// SIDEBAR SECTIONS
-// --------------------------
+// ==================================
+// SIDEBAR SECTION SWITCHING
+// ==================================
 
-function showSection(
-  sectionId,
-  button = null
-) {
+function showSection(sectionId, button = null) {
 
   document
     .querySelectorAll(".content-section")
@@ -94,18 +83,26 @@ function showSection(
 }
 
 
-// --------------------------
+// ==================================
 // LOAD PRODUCTS
-// --------------------------
+// ==================================
 
 async function loadProducts() {
 
   try {
 
-    const response =
-      await fetch(
-        `${API_URL}/products`
+    const response = await fetch(
+      `${API_URL}/products`
+    );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Could not load products"
       );
+
+    }
 
 
     products =
@@ -120,7 +117,7 @@ async function loadProducts() {
 
   catch (error) {
 
-    console.log(
+    console.error(
       "Error loading products:",
       error
     );
@@ -130,9 +127,9 @@ async function loadProducts() {
 }
 
 
-// --------------------------
+// ==================================
 // DISPLAY PRODUCTS
-// --------------------------
+// ==================================
 
 function displayProducts() {
 
@@ -143,9 +140,7 @@ function displayProducts() {
 
 
   if (!productBody) {
-
     return;
-
   }
 
 
@@ -155,7 +150,6 @@ function displayProducts() {
   products.forEach((product) => {
 
     const row = `
-
       <tr>
 
         <td>${product.id}</td>
@@ -189,7 +183,6 @@ function displayProducts() {
         </td>
 
       </tr>
-
     `;
 
 
@@ -200,9 +193,9 @@ function displayProducts() {
 }
 
 
-// --------------------------
-// DASHBOARD COUNTERS
-// --------------------------
+// ==================================
+// ADMIN DASHBOARD COUNTERS
+// ==================================
 
 function updateDashboard() {
 
@@ -221,7 +214,8 @@ function updateDashboard() {
   const lowStock =
     products.filter(
       (product) =>
-        product.quantity <= 5
+        product.quantity <= 5 &&
+        product.quantity > 0
     ).length;
 
 
@@ -237,32 +231,58 @@ function updateDashboard() {
     );
 
 
-  document.getElementById(
-    "totalProducts"
-  ).textContent = totalProducts;
+  const totalProductsElement =
+    document.getElementById(
+      "totalProducts"
+    );
+
+  const totalStockElement =
+    document.getElementById(
+      "totalStock"
+    );
+
+  const lowStockElement =
+    document.getElementById(
+      "lowStock"
+    );
+
+  const inventoryValueElement =
+    document.getElementById(
+      "inventoryValue"
+    );
 
 
-  document.getElementById(
-    "totalStock"
-  ).textContent = totalStock;
+  if (totalProductsElement) {
+    totalProductsElement.textContent =
+      totalProducts;
+  }
 
 
-  document.getElementById(
-    "lowStock"
-  ).textContent = lowStock;
+  if (totalStockElement) {
+    totalStockElement.textContent =
+      totalStock;
+  }
 
 
-  document.getElementById(
-    "inventoryValue"
-  ).textContent =
-    `₹${inventoryValue.toFixed(2)}`;
+  if (lowStockElement) {
+    lowStockElement.textContent =
+      lowStock;
+  }
+
+
+  if (inventoryValueElement) {
+
+    inventoryValueElement.textContent =
+      `₹${inventoryValue.toFixed(2)}`;
+
+  }
 
 }
 
 
-// --------------------------
+// ==================================
 // ADD PRODUCT
-// --------------------------
+// ==================================
 
 const productForm =
   document.getElementById(
@@ -313,18 +333,17 @@ if (productForm) {
       };
 
 
-      const response =
-        await fetch(
+      try {
+
+        const response = await fetch(
           `${API_URL}/products`,
           {
 
             method: "POST",
 
             headers: {
-
               "Content-Type":
                 "application/json"
-
             },
 
             body:
@@ -336,7 +355,20 @@ if (productForm) {
         );
 
 
-      if (response.ok) {
+        if (!response.ok) {
+
+          const result =
+            await response.json();
+
+          alert(
+            result.detail ||
+            "Unable to add product"
+          );
+
+          return;
+
+        }
+
 
         productForm.reset();
 
@@ -348,23 +380,21 @@ if (productForm) {
         );
 
 
-        document
-          .querySelectorAll(
+        const buttons =
+          document.querySelectorAll(
             ".menu-button"
-          )
-          .forEach((button) => {
+          );
+
+
+        buttons.forEach(
+          (button) => {
 
             button.classList.remove(
               "active-menu"
             );
 
-          });
-
-
-        const buttons =
-          document.querySelectorAll(
-            ".menu-button"
-          );
+          }
+        );
 
 
         if (buttons[1]) {
@@ -377,14 +407,24 @@ if (productForm) {
 
       }
 
-  });
+      catch (error) {
+
+        console.error(
+          "Add product error:",
+          error
+        );
+
+      }
+
+    }
+  );
 
 }
 
 
-// --------------------------
+// ==================================
 // OPEN EDIT MODAL
-// --------------------------
+// ==================================
 
 function openEditModal(productId) {
 
@@ -396,9 +436,7 @@ function openEditModal(productId) {
 
 
   if (!product) {
-
     return;
-
   }
 
 
@@ -439,22 +477,28 @@ function openEditModal(productId) {
 }
 
 
-// --------------------------
+// ==================================
 // CLOSE EDIT MODAL
-// --------------------------
+// ==================================
 
 function closeEditModal() {
 
-  document.getElementById(
-    "editModal"
-  ).classList.remove("show");
+  const modal =
+    document.getElementById(
+      "editModal"
+    );
+
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
 
 }
 
 
-// --------------------------
+// ==================================
 // UPDATE PRODUCT
-// --------------------------
+// ==================================
 
 async function updateProduct() {
 
@@ -498,18 +542,17 @@ async function updateProduct() {
   };
 
 
-  const response =
-    await fetch(
+  try {
+
+    const response = await fetch(
       `${API_URL}/products/${productId}`,
       {
 
         method: "PUT",
 
         headers: {
-
           "Content-Type":
             "application/json"
-
         },
 
         body:
@@ -521,24 +564,44 @@ async function updateProduct() {
     );
 
 
-  if (response.ok) {
+    if (!response.ok) {
+
+      const result =
+        await response.json();
+
+      alert(
+        result.detail ||
+        "Unable to update product"
+      );
+
+      return;
+
+    }
+
 
     closeEditModal();
 
-    loadProducts();
+    await loadProducts();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Update product error:",
+      error
+    );
 
   }
 
 }
 
 
-// --------------------------
+// ==================================
 // DELETE MODAL
-// --------------------------
+// ==================================
 
-function openDeleteModal(
-  productId
-) {
+function openDeleteModal(productId) {
 
   document.getElementById(
     "deleteProductId"
@@ -554,16 +617,22 @@ function openDeleteModal(
 
 function closeDeleteModal() {
 
-  document.getElementById(
-    "deleteModal"
-  ).classList.remove("show");
+  const modal =
+    document.getElementById(
+      "deleteModal"
+    );
+
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
 
 }
 
 
-// --------------------------
+// ==================================
 // DELETE PRODUCT
-// --------------------------
+// ==================================
 
 async function confirmDeleteProduct() {
 
@@ -573,8 +642,9 @@ async function confirmDeleteProduct() {
     ).value;
 
 
-  const response =
-    await fetch(
+  try {
+
+    const response = await fetch(
       `${API_URL}/products/${productId}`,
       {
         method: "DELETE"
@@ -582,50 +652,89 @@ async function confirmDeleteProduct() {
     );
 
 
-  if (response.ok) {
+    if (!response.ok) {
+
+      const result =
+        await response.json();
+
+      alert(
+        result.detail ||
+        "Unable to delete product"
+      );
+
+      return;
+
+    }
+
 
     closeDeleteModal();
 
-    loadProducts();
+    await loadProducts();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Delete product error:",
+      error
+    );
 
   }
 
 }
 
 
-// --------------------------
-// LOGOUT MODAL
-// --------------------------
+// ==================================
+// ADMIN LOGOUT
+// ==================================
 
 function openLogoutModal() {
 
-  document.getElementById(
-    "logoutModal"
-  ).classList.add("show");
+  const modal =
+    document.getElementById(
+      "logoutModal"
+    );
+
+
+  if (modal) {
+
+    modal.classList.add("show");
+
+  }
 
 }
 
 
 function closeLogoutModal() {
 
-  document.getElementById(
-    "logoutModal"
-  ).classList.remove("show");
+  const modal =
+    document.getElementById(
+      "logoutModal"
+    );
+
+
+  if (modal) {
+
+    modal.classList.remove("show");
+
+  }
 
 }
 
-
-// --------------------------
-// LOGOUT
-// --------------------------
 
 function confirmLogout() {
 
-  localStorage.removeItem(
-    "user"
-  );
+  localStorage.removeItem("user");
+
   window.location.href =
     "index.html";
+
 }
+
+
+// ==================================
 // INITIAL LOAD
+// ==================================
+
 loadProducts();
