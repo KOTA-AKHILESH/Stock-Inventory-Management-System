@@ -41,15 +41,14 @@
       </form>
     </div>
 
-
     <div class="form-box" id="register-form">
       <form id="registerForm">
         <h2>Register</h2>
 
         <input
           type="text"
-          id="registerName"
-          placeholder="Name"
+          id="registerUserId"
+          placeholder="User ID"
           required
         />
 
@@ -64,6 +63,14 @@
           type="password"
           id="registerPassword"
           placeholder="Password"
+          minlength="6"
+          required
+        />
+
+        <input
+          type="password"
+          id="confirmPassword"
+          placeholder="Confirm Password"
           minlength="6"
           required
         />
