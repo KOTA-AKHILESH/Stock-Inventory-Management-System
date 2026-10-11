@@ -1,0 +1,10 @@
+{
+  "name": "stock-inventory-management",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "python -m uvicorn main:app --app-dir backend --reload",
+    "start": "python -m uvicorn main:app --app-dir backend",
+    "setup": "python -m pip install -r backend/requirements.txt"
+  }
+}

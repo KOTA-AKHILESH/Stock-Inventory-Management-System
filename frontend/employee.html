@@ -1,397 +1,234 @@
 <!doctype html>
-
 <html lang="en">
-
-<head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>
-    Employee Dashboard
-  </title>
-
-  <link
-    rel="stylesheet"
-    href="dashboard.css"
-  >
-
-</head>
-
-
-<body>
-
-  <div class="admin-container">
-
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar">
-
-      <div>
-
-        <div class="sidebar-title">
-
-          <h2>
-            Inventory
-          </h2>
-
-          <p>
-            Employee Portal
-          </p>
-
-        </div>
-
-
-        <div class="sidebar-menu">
-
-
-          <button
-            class="menu-button active-menu"
-            onclick="showEmployeeSection(
-              'employeeDashboardSection',
-              this
-            )"
-          >
-            Dashboard
-          </button>
-
-
-          <button
-            class="menu-button"
-            onclick="showEmployeeSection(
-              'employeeStockSection',
-              this
-            )"
-          >
-            Stock
-          </button>
-
-
-          <button
-            class="menu-button"
-            onclick="showEmployeeSection(
-              'employeeLowStockSection',
-              this
-            )"
-          >
-            Low Stock
-          </button>
-
-
-          <button
-            class="menu-button"
-            onclick="showEmployeeSection(
-              'employeeHighStockSection',
-              this
-            )"
-          >
-            High Stock
-          </button>
-
-
-        </div>
-
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stockroom · Employee Dashboard</title>
+    <link rel="stylesheet" href="employee.css" />
+    <script src="employee.js" defer=""></script>
+  </head>
+  <body>
+    <!-- 1. Top bar: hamburger button, brand and user -->
+    <header class="topbar">
+      <div class="brand-group">
+        <button
+          id="menuToggle"
+          class="icon-button"
+          aria-label="Open navigation"
+          aria-expanded="false"
+          aria-controls="sidebar"
+        >
+          ☰</button
+        ><a class="brand" href="employee.html"
+          ><span class="logo">S</span>Stockroom<span class="brand-sub">
+            INVENTORY</span
+          ></a
+        >
       </div>
-
-
-      <button
-        class="logout-button"
-        onclick="employeeLogout()"
-      >
-        Logout
-      </button>
-
+      <div class="profile">
+        <span class="online-dot"></span><span id="userName">Loading…</span
+        ><span class="avatar" id="avatar">S</span>
+      </div>
+    </header>
+    <div id="backdrop" class="backdrop" hidden=""></div>
+    <!-- 2. Hidden navigation drawer -->
+    <aside id="sidebar" class="sidebar" hidden="" aria-label="Navigation">
+      <div class="drawer-heading">
+        <span class="brand">Stockroom</span
+        ><button
+          class="icon-button"
+          id="closeMenu"
+          aria-label="Close navigation"
+        >
+          ×
+        </button>
+      </div>
+      <p class="eyebrow" id="roleLabel">Employee Portal</p>
+      <nav id="navigation">
+        <button class="nav-button active" data-view="overview">Overview</button
+        ><button class="nav-button" data-view="products">
+          Stock management</button
+        ><button class="nav-button" data-view="low">Low stock</button
+        ><button class="nav-button" data-view="high">High stock</button>
+      </nav>
+      <div class="drawer-footer">
+        <p>Everything in its place.</p>
+        <button id="logout" class="secondary">Sign out ↗</button>
+      </div>
     </aside>
-
-
-    <!-- MAIN CONTENT -->
-
-    <main class="main-content">
-
-
-      <!-- TOP BAR -->
-
-      <header class="topbar">
-
+    <!-- 3. Dashboard content -->
+    <main class="main">
+      <div class="page-heading">
         <div>
-
-          <h2>
-            Stock Inventory Management
-          </h2>
-
-          <p id="welcome">
+          <p class="eyebrow">YOUR INVENTORY, AT A GLANCE</p>
+          <h1 id="pageTitle">Employee Overview</h1>
+          <p class="muted" id="pageSubtitle">
+            A clear view of what’s in stock and what needs attention.
           </p>
-
         </div>
-
-      </header>
-
-
-      <!-- EMPLOYEE DASHBOARD -->
-
-      <section
-        id="employeeDashboardSection"
-        class="content-section active-section"
-      >
-
-        <div class="section-heading">
-
-          <h1>
-            Employee Dashboard
-          </h1>
-
-          <p>
-            Manage inventory stock
-          </p>
-
+        <div class="heading-actions">
+          <button id="refresh" class="secondary">↻ Refresh</button>
         </div>
-
-
-        <div class="dashboard-cards">
-
-
-          <div class="card">
-
-            <h3>
-              Total Products
-            </h3>
-
-            <p id="employeeTotalProducts">
-              0
-            </p>
-
-          </div>
-
-
-          <div class="card">
-
-            <h3>
-              Total Stock
-            </h3>
-
-            <p id="employeeTotalStock">
-              0
-            </p>
-
-          </div>
-
-
-          <div class="card">
-
-            <h3>
-              Low Stock
-            </h3>
-
-            <p id="employeeLowStock">
-              0
-            </p>
-
-          </div>
-
-
-          <div class="card">
-
-            <h3>
-              Out of Stock
-            </h3>
-
-            <p id="employeeOutOfStock">
-              0
-            </p>
-
-          </div>
-
-
+      </div>
+      <div id="notice" class="notice" role="status" hidden=""></div>
+      <!-- 4. Overview: summary cards, stock health and restock priorities -->
+      <section id="overview">
+        <div class="metrics">
+          <article class="metric">
+            <span class="metric-icon">▦</span>
+            <p>Products</p>
+            <h2 id="totalProducts">—</h2>
+            <small>Unique inventory items</small>
+          </article>
+          <article class="metric">
+            <span class="metric-icon">▤</span>
+            <p>Units in stock</p>
+            <h2 id="totalStock">—</h2>
+            <small>Across all categories</small>
+          </article>
+          <article class="metric warn">
+            <span class="metric-icon">!</span>
+            <p>Needs attention</p>
+            <h2 id="lowStock">—</h2>
+            <small>Products with 5 units or fewer</small>
+          </article>
+          <article class="metric">
+            <span class="metric-icon">₹</span>
+            <p>Inventory value</p>
+            <h2 id="inventoryValue">—</h2>
+            <small>Current stock × unit price</small>
+          </article>
         </div>
-
+        <div class="overview-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Stock health</h2>
+                <p class="muted">Keep your shelves ready.</p>
+              </div>
+              <span class="badge">Live inventory</span>
+            </div>
+            <div class="health-layout">
+              <div class="donut" id="healthDonut">
+                <div>
+                  <strong id="healthyPercent">—</strong
+                  ><small>healthy products</small>
+                </div>
+              </div>
+              <div id="healthLegend" class="legend"></div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Restock priorities</h2>
+                <p class="muted">Start with your lowest quantities.</p>
+              </div>
+              <button id="viewLowStock" class="text-button">View all ↗</button>
+            </div>
+            <div id="restockList"></div>
+          </article>
+        </div>
       </section>
-
-
-      <!-- STOCK MANAGEMENT -->
-
-      <section
-        id="employeeStockSection"
-        class="content-section"
-      >
-
-        <div class="section-heading">
-
-          <h1>
-            Stock Management
-          </h1>
-
-          <p>
-            Increase or decrease product quantity
-          </p>
-
+      <!-- 5. Products table with search and filters -->
+      <section id="inventorySection" class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2 id="tableTitle">Product inventory</h2>
+            <p class="muted" id="resultCount">Loading products…</p>
+          </div>
+          <button id="export" class="secondary">↓ Export CSV</button>
         </div>
-
-
-        <div class="table-container">
-
+        <div class="filters">
+          <label class="search"
+            ><span>⌕</span
+            ><input
+              type="search"
+              id="search"
+              placeholder="Search product, supplier or ID"
+              aria-label="Search products" /></label
+          ><select id="category" aria-label="Filter category">
+            <option value="">All categories</option></select
+          ><select id="stockFilter" aria-label="Filter stock">
+            <option value="all">All stock levels</option>
+            <option value="low">Low stock (≤ 5)</option>
+            <option value="out">Out of stock</option>
+            <option value="high">High stock (&gt; 20)</option>
+          </select>
+        </div>
+        <div class="table-wrap">
           <table>
-
             <thead>
-
               <tr>
-
-                <th>ID</th>
-
-                <th>Name</th>
-
-                <th>Category</th>
-
-                <th>Quantity</th>
-
-                <th>Supplier</th>
-
                 <th>
-                  Stock Control
+                  <button id="sortName" class="text-button">Product ↕</button>
                 </th>
-
-              </tr>
-
-            </thead>
-
-
-            <tbody
-              id="employeeProductBody"
-            >
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </section>
-
-
-      <!-- LOW STOCK -->
-
-      <section
-        id="employeeLowStockSection"
-        class="content-section"
-      >
-
-        <div class="section-heading">
-
-          <h1>
-            Low Stock
-          </h1>
-
-          <p>
-            Products with quantity 5 or below
-          </p>
-
-        </div>
-
-
-        <div class="table-container">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>ID</th>
-
-                <th>Name</th>
-
                 <th>Category</th>
-
-                <th>Quantity</th>
-
+                <th>Stock</th>
+                <th>Unit price</th>
                 <th>Supplier</th>
-
-                <th>Status</th>
-
+                <th>Actions</th>
               </tr>
-
             </thead>
-
-
-            <tbody
-              id="lowStockBody"
-            >
-            </tbody>
-
+            <tbody id="productBody"></tbody>
           </table>
-
         </div>
-
+        <div class="pagination">
+          <span id="pageInfo"></span>
+          <div>
+            <button class="secondary" id="previous">← Previous</button
+            ><button class="secondary" id="next">Next →</button>
+          </div>
+        </div>
       </section>
 
-
-      <!-- HIGH STOCK -->
-
-      <section
-        id="employeeHighStockSection"
-        class="content-section"
-      >
-
-        <div class="section-heading">
-
-          <h1>
-            High Stock
-          </h1>
-
-          <p>
-            Products with quantity greater than 20
-          </p>
-
-        </div>
-
-
-        <div class="table-container">
-
-          <table>
-
-            <thead>
-
-              <tr>
-
-                <th>ID</th>
-
-                <th>Name</th>
-
-                <th>Category</th>
-
-                <th>Quantity</th>
-
-                <th>Supplier</th>
-
-                <th>Status</th>
-
-              </tr>
-
-            </thead>
-
-
-            <tbody
-              id="highStockBody"
-            >
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </section>
-
-
+      <footer>Stockroom <span>Simple stock. Smarter decisions.</span></footer>
     </main>
 
-  </div>
-
-
-  <script src="employee.js"></script>
-
-</body>
-
+    <!-- Stock form: increase or decrease quantity -->
+    <dialog id="stockDialog">
+      <form id="stockForm">
+        <div class="panel-heading">
+          <h2>Adjust stock</h2>
+          <button
+            type="button"
+            class="icon-button"
+            data-close="stockDialog"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <p id="stockName" class="muted"></p>
+        <input type="hidden" id="stockId" /><label
+          >Quantity change<input
+            type="number"
+            id="stockChange"
+            step="1"
+            required=""
+            placeholder="e.g. 10 to add or -3 to remove"
+        /></label>
+        <p class="muted">
+          Use a positive number for stock in and a negative number for stock
+          out.
+        </p>
+        <p class="error" id="stockError" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" class="secondary" data-close="stockDialog">
+            Cancel</button
+          ><button class="primary">Update stock</button>
+        </div>
+      </form>
+    </dialog>
+    <!-- Confirmation: deletion, role change or logout -->
+    <dialog id="confirmDialog">
+      <h2 id="confirmTitle"></h2>
+      <p id="confirmText" class="muted"></p>
+      <p id="confirmError" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button id="confirmCancel" class="secondary">Cancel</button
+        ><button id="confirmAction" class="danger">Confirm</button>
+      </div>
+    </dialog>
+  </body>
 </html>
