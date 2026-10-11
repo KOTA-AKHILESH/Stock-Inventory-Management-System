@@ -1,21 +1,21 @@
-from fastapi import FastAPI, HTTPException, Cookie, Depends, Response
-from fastapi.staticfiles import StaticFiles
-import time
+import hashlib
 import hmac
 import os
-from contextlib import contextmanager
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr, Field, field_validator
-import sqlite3
-import hashlib
 import secrets
+import sqlite3
+import time
+from contextlib import contextmanager
 from pathlib import Path
+
+from fastapi import Cookie, Depends, FastAPI, HTTPException, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 app = FastAPI(title="Stock Inventory API")
 
 DB_PATH = Path(os.environ.get("INVENTORY_DB", Path(__file__).with_name("users.db")))
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,10 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# -------------------------
-# MODELS
-# -------------------------
 
 class RegisterData(BaseModel):
     name: str
@@ -67,10 +63,6 @@ class QuantityUpdate(BaseModel):
     change: int = Field(strict=True)
 
 
-# -------------------------
-# DATABASE
-# -------------------------
-
 @contextmanager
 def get_connection():
     connection = sqlite3.connect(DB_PATH, timeout=15)
@@ -85,8 +77,7 @@ def get_connection():
 def create_database():
     with get_connection() as connection:
 
-        connection.execute(
-            """
+        connection.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -95,11 +86,9 @@ def create_database():
                 salt TEXT NOT NULL,
                 role TEXT NOT NULL
             )
-            """
-        )
+            """)
 
-        connection.execute(
-            """
+        connection.execute("""
             CREATE TABLE IF NOT EXISTS products (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -108,10 +97,11 @@ def create_database():
                 price REAL NOT NULL,
                 supplier TEXT NOT NULL
             )
-            """
-        )
+            """)
 
-        connection.execute("CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)")
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL)"
+        )
         connection.commit()
 
 
@@ -119,7 +109,13 @@ def current_user(session: str | None = Cookie(default=None)):
     if not session:
         raise HTTPException(401, "Please sign in")
     with get_connection() as connection:
-        user = connection.execute("SELECT u.id, u.name, u.email, u.role FROM users u JOIN sessions s ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?", (hashlib.sha256(session.encode()).hexdigest(), int(time.time()))).fetchone()
+        user = connection.execute(
+            """SELECT u.id, u.name, u.email, u.role
+            FROM users u
+            JOIN sessions s ON u.id = s.user_id
+            WHERE s.token_hash = ? AND s.expires_at > ?""",
+            (hashlib.sha256(session.encode()).hexdigest(), int(time.time())),
+        ).fetchone()
     if not user:
         raise HTTPException(401, "Your session has expired. Please sign in again")
     return dict(user)
@@ -149,20 +145,10 @@ def hash_password(password: str, salt: bytes) -> str:
 create_database()
 
 
-# -------------------------
-# HOME
-# -------------------------
-
 @app.get("/")
 def home():
-    return {
-        "message": "Stock Inventory backend is running"
-    }
+    return {"message": "Stock Inventory backend is running"}
 
-
-# -------------------------
-# REGISTER
-# -------------------------
 
 @app.post("/register")
 def register(data: RegisterData):
@@ -170,32 +156,19 @@ def register(data: RegisterData):
     if not data.name.strip():
         raise HTTPException(400, "Name is required")
     if data.role != "employee":
-        raise HTTPException(403, "New accounts start as employees; ask a super admin to change your role")
-
-    allowed_roles = {
-        "super_admin",
-        "admin",
-        "employee"
-    }
-
-    if data.role not in allowed_roles:
         raise HTTPException(
-            status_code=400,
-            detail="Invalid role"
+            403,
+            "New accounts start as employees; ask a super admin to change your role",
         )
 
     if len(data.password) < 6:
         raise HTTPException(
-            status_code=400,
-            detail="Password must contain at least 6 characters"
+            status_code=400, detail="Password must contain at least 6 characters"
         )
 
     salt = secrets.token_bytes(16)
 
-    password_hash = hash_password(
-        data.password,
-        salt
-    )
+    password_hash = hash_password(data.password, salt)
 
     try:
 
@@ -221,18 +194,11 @@ def register(data: RegisterData):
     except sqlite3.IntegrityError:
 
         raise HTTPException(
-            status_code=400,
-            detail="An account with this email already exists"
+            status_code=400, detail="An account with this email already exists"
         )
 
-    return {
-        "message": "Registration successful"
-    }
+    return {"message": "Registration successful"}
 
-
-# -------------------------
-# LOGIN
-# -------------------------
 
 @app.post("/login")
 def login(data: LoginData, response: Response):
@@ -245,39 +211,42 @@ def login(data: LoginData, response: Response):
             FROM users
             WHERE email = ?
             """,
-            (
-                data.email.lower(),
-            ),
+            (data.email.lower(),),
         ).fetchone()
 
     if user is None:
 
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
-        )
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    salt = bytes.fromhex(
-        user["salt"]
-    )
+    salt = bytes.fromhex(user["salt"])
 
-    entered_password_hash = hash_password(
-        data.password,
-        salt
-    )
+    entered_password_hash = hash_password(data.password, salt)
 
     if not hmac.compare_digest(entered_password_hash, user["password_hash"]):
 
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid email or password"
-        )
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = secrets.token_urlsafe(32)
     with get_connection() as connection:
-        connection.execute("DELETE FROM sessions WHERE expires_at <= ?", (int(time.time()),))
-        connection.execute("INSERT INTO sessions VALUES (?, ?, ?)", (hashlib.sha256(token.encode()).hexdigest(), user["id"], int(time.time()) + 28800))
-    response.set_cookie("session", token, httponly=True, samesite="lax", max_age=28800, secure=os.environ.get("COOKIE_SECURE") == "1")
+        connection.execute(
+            "DELETE FROM sessions WHERE expires_at <= ?", (int(time.time()),)
+        )
+        connection.execute(
+            "INSERT INTO sessions VALUES (?, ?, ?)",
+            (
+                hashlib.sha256(token.encode()).hexdigest(),
+                user["id"],
+                int(time.time()) + 28800,
+            ),
+        )
+    response.set_cookie(
+        "session",
+        token,
+        httponly=True,
+        samesite="lax",
+        max_age=28800,
+        secure=os.environ.get("COOKIE_SECURE") == "1",
+    )
     return {
         "message": "Login successful",
         "user": {
@@ -289,24 +258,8 @@ def login(data: LoginData, response: Response):
     }
 
 
-# -------------------------
-# ADD PRODUCT
-# -------------------------
-
 @app.post("/products")
 def add_product(data: ProductData, user=Depends(manager)):
-
-    if data.quantity < 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Quantity cannot be negative"
-        )
-
-    if data.price < 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Price cannot be negative"
-        )
 
     with get_connection() as connection:
 
@@ -333,38 +286,22 @@ def add_product(data: ProductData, user=Depends(manager)):
 
         connection.commit()
 
-    return {
-        "message": "Product added successfully",
-        "product_id": cursor.lastrowid
-    }
+    return {"message": "Product added successfully", "product_id": cursor.lastrowid}
 
-
-# -------------------------
-# GET PRODUCTS
-# -------------------------
 
 @app.get("/products")
 def get_products(user=Depends(current_user)):
 
     with get_connection() as connection:
 
-        products = connection.execute(
-            """
+        products = connection.execute("""
             SELECT *
             FROM products
             ORDER BY id ASC
-            """
-        ).fetchall()
+            """).fetchall()
 
-    return [
-        dict(product)
-        for product in products
-    ]
+    return [dict(product) for product in products]
 
-
-# -------------------------
-# DELETE PRODUCT
-# -------------------------
 
 @app.delete("/products/{product_id}")
 def delete_product(product_id: int, user=Depends(manager)):
@@ -376,44 +313,19 @@ def delete_product(product_id: int, user=Depends(manager)):
             DELETE FROM products
             WHERE id = ?
             """,
-            (product_id,)
+            (product_id,),
         )
 
         connection.commit()
 
     if cursor.rowcount == 0:
-        raise HTTPException(
-            status_code=404,
-            detail="Product not found"
-        )
+        raise HTTPException(status_code=404, detail="Product not found")
 
-    return {
-        "message": "Product deleted successfully"
-    }
+    return {"message": "Product deleted successfully"}
 
-
-# -------------------------
-# UPDATE FULL PRODUCT
-# -------------------------
 
 @app.put("/products/{product_id}")
-def update_product(
-    product_id: int,
-    data: ProductData,
-    user=Depends(manager)
-):
-
-    if data.quantity < 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Quantity cannot be negative"
-        )
-
-    if data.price < 0:
-        raise HTTPException(
-            status_code=400,
-            detail="Price cannot be negative"
-        )
+def update_product(product_id: int, data: ProductData, user=Depends(manager)):
 
     with get_connection() as connection:
 
@@ -440,25 +352,14 @@ def update_product(
         connection.commit()
 
     if cursor.rowcount == 0:
-        raise HTTPException(
-            status_code=404,
-            detail="Product not found"
-        )
+        raise HTTPException(status_code=404, detail="Product not found")
 
-    return {
-        "message": "Product updated successfully"
-    }
+    return {"message": "Product updated successfully"}
 
-
-# -------------------------
-# EMPLOYEE QUANTITY UPDATE
-# -------------------------
 
 @app.patch("/products/{product_id}/quantity")
 def update_product_quantity(
-    product_id: int,
-    data: QuantityUpdate,
-    user=Depends(current_user)
+    product_id: int, data: QuantityUpdate, user=Depends(current_user)
 ):
 
     with get_connection() as connection:
@@ -469,39 +370,42 @@ def update_product_quantity(
             FROM products
             WHERE id = ?
             """,
-            (product_id,)
+            (product_id,),
         ).fetchone()
 
         if product is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Product not found"
-            )
+            raise HTTPException(status_code=404, detail="Product not found")
 
-        cursor = connection.execute("UPDATE products SET quantity = quantity + ? WHERE id = ? AND quantity + ? >= 0", (data.change, product_id, data.change))
+        cursor = connection.execute(
+            "UPDATE products SET quantity = quantity + ? WHERE id = ? AND quantity + ? >= 0",
+            (data.change, product_id, data.change),
+        )
         if cursor.rowcount == 0:
             raise HTTPException(400, "Stock quantity cannot be below 0")
-        new_quantity = connection.execute("SELECT quantity FROM products WHERE id=?", (product_id,)).fetchone()["quantity"]
+        new_quantity = connection.execute(
+            "SELECT quantity FROM products WHERE id=?", (product_id,)
+        ).fetchone()["quantity"]
 
         connection.commit()
 
     return {
         "message": "Stock quantity updated",
         "product_id": product_id,
-        "quantity": new_quantity
+        "quantity": new_quantity,
     }
+
+
 @app.get("/users")
 def get_users(user=Depends(super_admin)):
     with get_connection() as connection:
-        users = connection.execute(
-            """
+        users = connection.execute("""
             SELECT id, name, email, role
             FROM users
             ORDER BY id ASC
-            """
-        ).fetchall()
+            """).fetchall()
 
     return [dict(user) for user in users]
+
 
 @app.get("/me")
 def me(user=Depends(current_user)):
@@ -512,7 +416,10 @@ def me(user=Depends(current_user)):
 def logout(response: Response, session: str | None = Cookie(default=None)):
     if session:
         with get_connection() as connection:
-            connection.execute("DELETE FROM sessions WHERE token_hash=?", (hashlib.sha256(session.encode()).hexdigest(),))
+            connection.execute(
+                "DELETE FROM sessions WHERE token_hash=?",
+                (hashlib.sha256(session.encode()).hexdigest(),),
+            )
     response.delete_cookie("session")
     return {"message": "Signed out"}
 
@@ -528,11 +435,19 @@ def update_role(user_id: int, data: RoleData, user=Depends(super_admin)):
     if user_id == user["id"]:
         raise HTTPException(400, "You cannot change your own role")
     with get_connection() as connection:
-        cursor = connection.execute("UPDATE users SET role=? WHERE id=?", (data.role, user_id))
+        cursor = connection.execute(
+            "UPDATE users SET role=? WHERE id=?", (data.role, user_id)
+        )
         if cursor.rowcount == 0:
             raise HTTPException(404, "User not found")
     return {"message": "Role updated"}
 
 
 # Keep frontend and API on the same origin: no separate frontend server needed.
-app.mount("/app", StaticFiles(directory=Path(__file__).resolve().parent.parent / "frontend", html=True), name="frontend")
+app.mount(
+    "/app",
+    StaticFiles(
+        directory=Path(__file__).resolve().parent.parent / "frontend", html=True
+    ),
+    name="frontend",
+)

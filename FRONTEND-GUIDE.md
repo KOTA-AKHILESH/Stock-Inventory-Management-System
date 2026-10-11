@@ -25,7 +25,7 @@ Every HTML page links only to its own CSS and JavaScript. No shared dashboard pa
 6. `openRoleDashboard()` uses the returned role to open `admin.html`, `super_admin.html` or `employee.html`.
 7. `register(event)` checks matching passwords and sends the signup data to `/register`. New accounts are employees; the super admin assigns other roles.
 
-## Dashboard: explain the numbered sections in the JS file
+## Dashboard: explain the functions in the JS file
 
 | Function | What it does |
 | --- | --- |
@@ -74,7 +74,7 @@ For editing, the same form is filled with an existing product and sends PUT to `
 
 ## CSS explanation
 
-The CSS files use numbered comments. Start with theme colors and basic rules, then the top bar, cards, stock health, tables, drawer and dialogs. `display: grid` arranges cards and `display: flex` aligns controls. The `@media` rules adjust the layout for smaller screens. The navigation is hidden by default and JavaScript controls when it opens.
+For CSS, start with theme colors and basic rules, then the top bar, cards, stock health, tables, drawer and dialogs. `display: grid` arranges cards and `display: flex` aligns controls. The `@media` rules adjust the layout for smaller screens. The navigation is hidden by default and JavaScript controls when it opens.
 
 ## Roles and security
 

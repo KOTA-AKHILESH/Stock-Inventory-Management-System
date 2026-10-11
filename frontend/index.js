@@ -1,20 +1,15 @@
-// INDEX.JS — login and registration only.
-// HTML creates the forms. CSS styles them. This file handles their behaviour.
-
-// 1. Show either the login form or the registration form.
 function showLoginForm() {
   document.getElementById("loginPanel").hidden = false;
   document.getElementById("registerPanel").hidden = true;
-  document.querySelector('#loginForm input[name="email"]').focus();
+  document.querySelector('#inventoryLoginForm input[name="email"]').focus();
 }
 
 function showRegisterForm() {
   document.getElementById("loginPanel").hidden = true;
   document.getElementById("registerPanel").hidden = false;
-  document.querySelector('#registerForm input[name="name"]').focus();
+  document.querySelector('#inventoryRegisterForm input[name="name"]').focus();
 }
 
-// 2. Send login / registration details to the backend.
 async function sendLoginRequest(path, data) {
   let response;
   try {
@@ -38,7 +33,6 @@ async function sendLoginRequest(path, data) {
   return result;
 }
 
-// 3. Open the correct HTML page using the role saved in the database.
 function openRoleDashboard(role) {
   if (role === "super_admin") {
     window.location.href = "super_admin.html";
@@ -49,10 +43,9 @@ function openRoleDashboard(role) {
   }
 }
 
-// 4. Read the login form and send its email / password.
 async function login(event) {
   event.preventDefault();
-  const form = document.getElementById("loginForm");
+  const form = document.getElementById("inventoryLoginForm");
   const button = form.querySelector('button[type="submit"]');
   const message = document.getElementById("loginMessage");
   button.disabled = true;
@@ -63,7 +56,7 @@ async function login(event) {
   };
   try {
     const result = await sendLoginRequest("/login", loginData);
-    // Login also sets an HttpOnly cookie, which the browser stores.
+    // The browser stores the session cookie after login.
     openRoleDashboard(result.user.role);
   } catch (error) {
     message.textContent = error.message;
@@ -72,10 +65,9 @@ async function login(event) {
   }
 }
 
-// 5. Validate matching passwords and register an employee account.
 async function register(event) {
   event.preventDefault();
-  const form = document.getElementById("registerForm");
+  const form = document.getElementById("inventoryRegisterForm");
   const button = form.querySelector('button[type="submit"]');
   const message = document.getElementById("registerMessage");
   button.disabled = true;
@@ -94,7 +86,7 @@ async function register(event) {
     const email = form.elements.email.value;
     form.reset();
     showLoginForm();
-    document.getElementById("loginForm").elements.email.value = email;
+    document.getElementById("inventoryLoginForm").elements.email.value = email;
     document.getElementById("loginMessage").textContent =
       "Account created. Please sign in.";
   } catch (error) {
@@ -104,10 +96,11 @@ async function register(event) {
   }
 }
 
-// 6. Connect HTML buttons and forms to the functions above.
 document.getElementById("showLogin").addEventListener("click", showLoginForm);
 document
   .getElementById("showRegister")
   .addEventListener("click", showRegisterForm);
-document.getElementById("loginForm").addEventListener("submit", login);
-document.getElementById("registerForm").addEventListener("submit", register);
+document.getElementById("inventoryLoginForm").addEventListener("submit", login);
+document
+  .getElementById("inventoryRegisterForm")
+  .addEventListener("submit", register);

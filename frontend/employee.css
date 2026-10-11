@@ -1,5 +1,3 @@
-/* EMPLOYEE.CSS — styles for employee.html. */
-/* 1. Theme colors and basic page styles */
 :root {
   --ink: #182d2b;
   --muted: #71817e;
@@ -46,7 +44,7 @@ a {
 }
 [hidden] {
   display: none !important;
-} /* 2. Top bar: brand, hamburger button and user profile */
+}
 .topbar {
   height: 80px;
   background: white;
@@ -184,7 +182,7 @@ p {
   color: var(--green);
   font-weight: 600;
   padding: 4px;
-} /* 3. Dashboard cards and stock summary */
+}
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -226,7 +224,7 @@ p {
 .warn .metric-icon {
   background: #fff3d9;
   color: #b77910;
-} /* 4. Stock health chart and restock priorities */
+}
 .overview-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -314,7 +312,7 @@ p {
   color: var(--muted);
   display: block;
   margin-top: 4px;
-} /* 5. Product search, filters, tables and pagination */
+}
 .filters {
   display: flex;
   gap: 12px;
@@ -449,7 +447,7 @@ footer {
   padding: 27px 0;
   color: var(--muted);
   font-size: 11px;
-} /* 6. Hamburger drawer and background overlay */
+}
 .backdrop {
   position: fixed;
   inset: 0;
@@ -506,7 +504,7 @@ footer {
 }
 .drawer-open {
   overflow: hidden;
-} /* 7. Product, stock and confirmation dialogs */
+}
 dialog {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -548,75 +546,7 @@ label input {
 }
 .role-select {
   width: 140px;
-} /* 8. Login and registration layout */
-.auth-layout {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
 }
-.auth-story {
-  background: #173f33;
-  color: #fff;
-  padding: 60px 8vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.auth-story .logo {
-  background: #d6e9a6;
-  color: #173f33;
-}
-.auth-story h1 {
-  font-size: clamp(38px, 4.4vw, 66px);
-  line-height: 1.08;
-  max-width: 480px;
-  margin: 50px 0 20px;
-}
-.auth-story p {
-  color: #b7cec2;
-  max-width: 350px;
-}
-.story-label {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: #cfe5b1;
-}
-.auth-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 45px 25px;
-}
-.auth-card {
-  width: 370px;
-  max-width: 100%;
-}
-.auth-card h1 {
-  font-size: 30px;
-  margin-top: 15px;
-}
-.auth-card form {
-  display: grid;
-  gap: 18px;
-  margin-top: 27px;
-}
-.auth-card .primary {
-  padding: 13px;
-}
-.auth-switch {
-  font-size: 13px;
-  text-align: center;
-  margin-top: 22px;
-  color: var(--muted);
-}
-.auth-card .error {
-  margin: 0;
-}
-.auth-card .note {
-  font-size: 11px;
-  color: var(--muted);
-}
-/* 9. Responsive layout: tablets */
 @media (max-width: 1000px) {
   .metrics {
     grid-template-columns: repeat(2, 1fr);
@@ -639,8 +569,11 @@ label input {
     height: 98px;
   }
 }
-/* 10. Responsive layout: phones */
+
 @media (max-width: 720px) {
+  .brand {
+    font-size: 18px;
+  }
   .main {
     padding: 25px 18px 0;
   }
@@ -699,13 +632,13 @@ label input {
     font-size: 11px;
     padding: 8px;
   }
-  .auth-layout {
+  .login-page {
     grid-template-columns: 1fr;
   }
-  .auth-story {
+  .login-intro {
     display: none;
   }
-  .auth-main {
+  .login-area {
     min-height: 100vh;
   }
   .form-grid {

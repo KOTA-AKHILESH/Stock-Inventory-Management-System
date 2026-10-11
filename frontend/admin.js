@@ -1,8 +1,5 @@
-// ADMIN.JS — functions for the Admin dashboard.
-// PAGE_ROLE is the role allowed to open this particular HTML page.
 const PAGE_ROLE = "admin";
 
-// These variables keep the data loaded from the backend.
 let currentUser = null;
 let products = [];
 let currentPage = 1;
@@ -11,9 +8,6 @@ let requestNumber = 0;
 let pendingAction = null;
 const PRODUCTS_PER_PAGE = 8;
 
-// 1. BACKEND CONNECTION
-// fetch() sends a request. await waits for the backend's reply.
-// The browser sends the login cookie automatically on the same origin.
 async function sendRequest(path, method = "GET", body = null) {
   const options = {
     method: method,
@@ -41,7 +35,6 @@ async function sendRequest(path, method = "GET", body = null) {
   return result;
 }
 
-// Format a number as Indian rupees.
 function formatPrice(value) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -50,7 +43,7 @@ function formatPrice(value) {
   }).format(value);
 }
 
-// Product names come from users. Escape them before adding them to HTML.
+// Escape product names before putting them into table HTML.
 function escapeHTML(value) {
   let text = String(value);
   text = text.replaceAll("&", "&amp;");
@@ -68,8 +61,6 @@ function showMessage(message, isError = false) {
   notice.classList.toggle("error", isError);
 }
 
-// 2. HAMBURGER MENU
-// hidden = true hides an element; hidden = false displays it.
 function openMenu() {
   document.getElementById("sidebar").hidden = false;
   document.getElementById("backdrop").hidden = false;
@@ -95,7 +86,7 @@ function handleMenuKeyboard(event) {
   if (sidebar.hidden) return;
   if (event.key === "Escape") closeMenu();
 
-  // Keep keyboard navigation inside the open drawer.
+  // Keep Tab focus inside the menu.
   if (event.key === "Tab") {
     const buttons = sidebar.querySelectorAll("button");
     const firstButton = buttons[0];
@@ -110,7 +101,6 @@ function handleMenuKeyboard(event) {
   }
 }
 
-// 3. SWITCH BETWEEN SECTIONS
 function showSection(sectionName) {
   currentPage = 1;
   document.getElementById("search").value = "";
@@ -143,7 +133,6 @@ function showSection(sectionName) {
   displayProducts();
 }
 
-// 4. SEARCH, FILTER AND SORT PRODUCTS
 function getFilteredProducts() {
   const searchText = document
     .getElementById("search")
@@ -201,11 +190,10 @@ function displayProducts() {
     start,
     start + PRODUCTS_PER_PAGE,
   );
-  const tableBody = document.getElementById("productBody");
+  const tableBody = document.getElementById("inventoryRows");
   tableBody.innerHTML = "";
 
   for (const product of visibleProducts) {
-    // data-id stores the product ID on each action button.
     let actionButtons = `<button class="secondary" data-action="stock" data-id="${product.id}">Adjust</button>`;
     actionButtons += `<button class="secondary" data-action="edit" data-id="${product.id}">Edit</button><button class="secondary" data-action="delete" data-id="${product.id}">Delete</button>`;
     tableBody.innerHTML += `
@@ -230,7 +218,6 @@ function displayProducts() {
   document.getElementById("next").disabled = currentPage >= totalPages;
 }
 
-// 5. DASHBOARD SUMMARY
 function updateDashboard() {
   let totalStock = 0;
   let inventoryValue = 0;
@@ -306,7 +293,7 @@ function fillCategoryFilter() {
 }
 
 async function loadProducts() {
-  // If a newer refresh starts, ignore this request's older result.
+  // Ignore a response if another refresh has already started.
   requestNumber++;
   const thisRequest = requestNumber;
   const refreshButton = document.getElementById("refresh");
@@ -331,9 +318,8 @@ async function loadProducts() {
   }
 }
 
-// 6. STOCK ADJUSTMENT (available to every role)
 function openStockForm(product) {
-  document.getElementById("stockForm").reset();
+  document.getElementById("stockAdjustmentForm").reset();
   document.getElementById("stockError").textContent = "";
   document.getElementById("stockId").value = product.id;
   document.getElementById("stockName").textContent =
@@ -342,8 +328,8 @@ function openStockForm(product) {
 }
 
 async function saveStock(event) {
-  event.preventDefault(); // Prevent the browser from reloading the form page.
-  const submitButton = document.querySelector("#stockForm .primary");
+  event.preventDefault();
+  const submitButton = document.querySelector("#stockAdjustmentForm .primary");
   submitButton.disabled = true;
   try {
     const productId = document.getElementById("stockId").value;
@@ -364,9 +350,8 @@ async function saveStock(event) {
   }
 }
 
-// PRODUCT MANAGEMENT: only admin and super admin pages include these functions.
 function openProductForm(product = null) {
-  document.getElementById("productForm").reset();
+  document.getElementById("inventoryProductForm").reset();
   document.getElementById("formError").textContent = "";
   document.getElementById("productId").value = "";
   document.getElementById("formTitle").textContent = "Add product";
@@ -387,7 +372,7 @@ function openProductForm(product = null) {
 
 async function saveProduct(event) {
   event.preventDefault();
-  const button = document.querySelector("#productForm .primary");
+  const button = document.querySelector("#inventoryProductForm .primary");
   button.disabled = true;
   document.getElementById("formError").textContent = "";
   try {
@@ -427,8 +412,6 @@ function askDeleteProduct(product) {
   );
 }
 
-// 7. CONFIRMATION AND SIGN OUT
-// Store the action until the user presses Confirm.
 function askConfirmation(title, message, action) {
   document.getElementById("confirmTitle").textContent = title;
   document.getElementById("confirmText").textContent = message;
@@ -455,10 +438,9 @@ async function logout() {
   window.location.replace("index.html");
 }
 
-// 8. DOWNLOAD THE FILTERED TABLE AS CSV
 function formatCSVCell(value) {
   let text = String(value);
-  // Prevent spreadsheet applications treating user text as a formula.
+  // Keep user text from becoming a spreadsheet formula.
   if (/^[=+@\-\t\r]/.test(text)) text = "'" + text;
   return '"' + text.replaceAll('"', '""') + '"';
 }
@@ -492,7 +474,6 @@ function exportProducts() {
   URL.revokeObjectURL(url);
 }
 
-// 9. BUTTON AND FORM EVENTS
 function setupEvents() {
   document.getElementById("menuToggle").addEventListener("click", openMenu);
   document.getElementById("closeMenu").addEventListener("click", closeMenu);
@@ -534,9 +515,11 @@ function setupEvents() {
     displayProducts();
   });
   document.getElementById("export").addEventListener("click", exportProducts);
-  document.getElementById("stockForm").addEventListener("submit", saveStock);
   document
-    .getElementById("productBody")
+    .getElementById("stockAdjustmentForm")
+    .addEventListener("submit", saveStock);
+  document
+    .getElementById("inventoryRows")
     .addEventListener("click", handleProductClick);
   document
     .getElementById("confirmAction")
@@ -557,7 +540,7 @@ function setupEvents() {
     openProductForm();
   });
   document
-    .getElementById("productForm")
+    .getElementById("inventoryProductForm")
     .addEventListener("submit", saveProduct);
 }
 
@@ -579,9 +562,6 @@ function handleProductClick(event) {
   if (button.dataset.action === "delete") askDeleteProduct(product);
 }
 
-// 10. INITIAL PAGE LOAD
-// The backend checks the actual session role; the page also redirects a user
-// who tries opening the wrong dashboard URL manually.
 async function initializePage() {
   try {
     currentUser = await sendRequest("/me");

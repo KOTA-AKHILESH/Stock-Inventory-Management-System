@@ -3,17 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Stockroom · Sign in</title>
+    <title>Stock Inventory · Sign in</title>
     <link rel="stylesheet" href="index.css" />
-    <script src="index.js" defer=""></script>
+    <script src="index.js" defer></script>
   </head>
   <body>
-    <div class="auth-layout">
-      <aside class="auth-story">
-        <div class="brand"><span class="logo">S</span>Stockroom</div>
+    <div class="login-page">
+      <aside class="login-intro">
+        <div class="brand">
+          <span class="logo">I</span>
+          Stock Inventory
+        </div>
         <div>
-          <span class="story-label">LESS FRICTION. MORE VISIBILITY.</span>
-          <h1>Good inventory.<br />Better business.</h1>
+          <span class="story-label">STOCK INVENTORY MANAGEMENT</span>
+          <h1>
+            Good inventory.
+            <br />
+            Better business.
+          </h1>
           <p>
             One place for your products, your stock and your team. Stay
             organized, stay ahead.
@@ -21,75 +28,93 @@
         </div>
         <p>Stock Inventory Management</p>
       </aside>
-      <main class="auth-main">
-        <div class="auth-card">
+      <main class="login-area">
+        <div class="login-card">
           <p class="eyebrow">WELCOME TO STOCKROOM</p>
-          <!-- Login: email and password; the backend returns the saved role. -->
+
+          <!-- Login uses the account role saved in the database. -->
           <section id="loginPanel">
             <h1>Welcome back.</h1>
             <p class="muted">Sign in to your inventory workspace.</p>
-            <form id="loginForm">
-              <label
-                >Email address<input
+            <form id="inventoryLoginForm">
+              <label>
+                Email address
+                <input
                   name="email"
                   type="email"
                   autocomplete="username"
-                  required=""
-                  placeholder="you@company.com" /></label
-              ><label
-                >Password<input
+                  required
+                  placeholder="you@company.com"
+                />
+              </label>
+              <label>
+                Password
+                <input
                   name="password"
                   type="password"
                   autocomplete="current-password"
-                  required=""
+                  required
                   placeholder="Enter your password"
-              /></label>
+                />
+              </label>
               <p id="loginMessage" class="error" role="alert"></p>
               <button class="primary" type="submit">Sign in →</button>
             </form>
-            <p class="auth-switch">
+            <p class="form-switch">
               New here?
               <button class="text-button" id="showRegister">
                 Create an account
               </button>
             </p>
           </section>
-          <!-- Registration: new users start as employees. -->
-          <section id="registerPanel" hidden="">
+
+          <!-- New employees register here; a super admin assigns admin access. -->
+          <section id="registerPanel" hidden>
             <h1>Join your team.</h1>
             <p class="muted">Create your account to get started.</p>
-            <form id="registerForm">
-              <label
-                >Name / User ID<input
+            <form id="inventoryRegisterForm">
+              <label>
+                Name / User ID
+                <input
                   name="name"
-                  required=""
+                  required
                   maxlength="120"
                   autocomplete="name"
-                  placeholder="Your name or user ID" /></label
-              ><label
-                >Email address<input
+                  placeholder="Your name or user ID"
+                />
+              </label>
+              <label>
+                Email address
+                <input
                   name="email"
                   type="email"
-                  required=""
+                  required
                   autocomplete="username"
-                  placeholder="you@company.com" /></label
-              ><label
-                >Password<input
+                  placeholder="you@company.com"
+                />
+              </label>
+              <label>
+                Password
+                <input
                   name="password"
                   type="password"
-                  required=""
+                  required
                   minlength="6"
                   autocomplete="new-password"
-                  placeholder="At least 6 characters" /></label
-              ><label
-                >Confirm password<input
+                  placeholder="At least 6 characters"
+                />
+              </label>
+              <label>
+                Confirm password
+                <input
                   name="confirmPassword"
                   type="password"
-                  required=""
+                  required
                   minlength="6"
                   autocomplete="new-password"
                   placeholder="Enter password again"
-              /></label>
+                />
+              </label>
               <p class="note">
                 New accounts have employee access. Your super admin can assign
                 admin access.
@@ -97,7 +122,7 @@
               <p id="registerMessage" class="error" role="alert"></p>
               <button class="primary" type="submit">Create account →</button>
             </form>
-            <p class="auth-switch">
+            <p class="form-switch">
               Already registered?
               <button class="text-button" id="showLogin">Sign in</button>
             </p>

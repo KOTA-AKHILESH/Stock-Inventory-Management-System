@@ -3,12 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Stockroom · Super Admin Dashboard</title>
+    <title>Stock Inventory · Super Admin Dashboard</title>
     <link rel="stylesheet" href="super_admin.css" />
-    <script src="super_admin.js" defer=""></script>
+    <script src="super_admin.js" defer></script>
   </head>
   <body>
-    <!-- 1. Top bar: hamburger button, brand and user -->
     <header class="topbar">
       <div class="brand-group">
         <button
@@ -18,24 +17,26 @@
           aria-expanded="false"
           aria-controls="sidebar"
         >
-          ☰</button
-        ><a class="brand" href="super_admin.html"
-          ><span class="logo">S</span>Stockroom<span class="brand-sub">
-            INVENTORY</span
-          ></a
-        >
+          ☰
+        </button>
+        <a class="brand" href="super_admin.html">
+          <span class="logo">I</span>
+          Stock Inventory
+          <span class="brand-sub">INVENTORY</span>
+        </a>
       </div>
       <div class="profile">
-        <span class="online-dot"></span><span id="userName">Loading…</span
-        ><span class="avatar" id="avatar">S</span>
+        <span class="online-dot"></span>
+        <span id="userName">Loading…</span>
+        <span class="avatar" id="avatar">S</span>
       </div>
     </header>
-    <div id="backdrop" class="backdrop" hidden=""></div>
-    <!-- 2. Hidden navigation drawer -->
-    <aside id="sidebar" class="sidebar" hidden="" aria-label="Navigation">
+    <div id="backdrop" class="backdrop" hidden></div>
+
+    <aside id="sidebar" class="sidebar" hidden aria-label="Navigation">
       <div class="drawer-heading">
-        <span class="brand">Stockroom</span
-        ><button
+        <span class="brand">Stock Inventory</span>
+        <button
           class="icon-button"
           id="closeMenu"
           aria-label="Close navigation"
@@ -44,35 +45,36 @@
         </button>
       </div>
       <p class="eyebrow" id="roleLabel">Super Admin Portal</p>
+      <!-- Navigation stays hidden until the hamburger button is clicked. -->
       <nav id="navigation">
-        <button class="nav-button active" data-view="overview">Overview</button
-        ><button class="nav-button" data-view="products">Products</button
-        ><button class="nav-button" data-view="low">Low stock</button
-        ><button class="nav-button" data-view="high">High stock</button
-        ><button class="nav-button" data-view="users">Team members</button>
+        <button class="nav-button active" data-view="overview">Overview</button>
+        <button class="nav-button" data-view="products">Products</button>
+        <button class="nav-button" data-view="low">Low stock</button>
+        <button class="nav-button" data-view="high">High stock</button>
+        <button class="nav-button" data-view="users">Team members</button>
       </nav>
       <div class="drawer-footer">
-        <p>Everything in its place.</p>
+        <p>Inventory management</p>
         <button id="logout" class="secondary">Sign out ↗</button>
       </div>
     </aside>
-    <!-- 3. Dashboard content -->
+
     <main class="main">
       <div class="page-heading">
         <div>
-          <p class="eyebrow">YOUR INVENTORY, AT A GLANCE</p>
+          <p class="eyebrow">INVENTORY OVERVIEW</p>
           <h1 id="pageTitle">Super Admin Overview</h1>
           <p class="muted" id="pageSubtitle">
-            A clear view of what’s in stock and what needs attention.
+            View stock levels and manage products.
           </p>
         </div>
         <div class="heading-actions">
-          <button id="refresh" class="secondary">↻ Refresh</button
-          ><button id="addProduct" class="primary">＋ Add product</button>
+          <button id="refresh" class="secondary">↻ Refresh</button>
+          <button id="addProduct" class="primary">＋ Add product</button>
         </div>
       </div>
-      <div id="notice" class="notice" role="status" hidden=""></div>
-      <!-- 4. Overview: summary cards, stock health and restock priorities -->
+      <div id="notice" class="notice" role="status" hidden></div>
+
       <section id="overview">
         <div class="metrics">
           <article class="metric">
@@ -112,8 +114,8 @@
             <div class="health-layout">
               <div class="donut" id="healthDonut">
                 <div>
-                  <strong id="healthyPercent">—</strong
-                  ><small>healthy products</small>
+                  <strong id="healthyPercent">—</strong>
+                  <small>healthy products</small>
                 </div>
               </div>
               <div id="healthLegend" class="legend"></div>
@@ -131,7 +133,7 @@
           </article>
         </div>
       </section>
-      <!-- 5. Products table with search and filters -->
+
       <section id="inventorySection" class="panel">
         <div class="panel-heading">
           <div>
@@ -141,16 +143,19 @@
           <button id="export" class="secondary">↓ Export CSV</button>
         </div>
         <div class="filters">
-          <label class="search"
-            ><span>⌕</span
-            ><input
+          <label class="search">
+            <span>⌕</span>
+            <input
               type="search"
               id="search"
               placeholder="Search product, supplier or ID"
-              aria-label="Search products" /></label
-          ><select id="category" aria-label="Filter category">
-            <option value="">All categories</option></select
-          ><select id="stockFilter" aria-label="Filter stock">
+              aria-label="Search products"
+            />
+          </label>
+          <select id="category" aria-label="Filter category">
+            <option value="">All categories</option>
+          </select>
+          <select id="stockFilter" aria-label="Filter stock">
             <option value="all">All stock levels</option>
             <option value="low">Low stock (≤ 5)</option>
             <option value="out">Out of stock</option>
@@ -171,19 +176,20 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="productBody"></tbody>
+            <!-- Rows are filled after GET /products returns the inventory. -->
+            <tbody id="inventoryRows"></tbody>
           </table>
         </div>
         <div class="pagination">
           <span id="pageInfo"></span>
           <div>
-            <button class="secondary" id="previous">← Previous</button
-            ><button class="secondary" id="next">Next →</button>
+            <button class="secondary" id="previous">← Previous</button>
+            <button class="secondary" id="next">Next →</button>
           </div>
         </div>
       </section>
-      <!-- 6. Super admin only: team management -->
-      <section id="usersSection" class="panel" hidden="">
+
+      <section id="usersSection" class="panel" hidden>
         <div class="panel-heading">
           <div>
             <h2>Team members</h2>
@@ -200,15 +206,18 @@
                 <th>Update role</th>
               </tr>
             </thead>
-            <tbody id="userBody"></tbody>
+            <tbody id="teamRows"></tbody>
           </table>
         </div>
       </section>
-      <footer>Stockroom <span>Simple stock. Smarter decisions.</span></footer>
+      <footer>
+        Stock Inventory
+        <span>Stock inventory management</span>
+      </footer>
     </main>
-    <!-- Product form: used for adding and editing -->
+
     <dialog id="productDialog">
-      <form id="productForm">
+      <form id="inventoryProductForm">
         <div class="panel-heading">
           <div>
             <p class="eyebrow">INVENTORY</p>
@@ -223,53 +232,70 @@
             ×
           </button>
         </div>
+        <!-- Empty ID adds a product; an existing ID updates it. -->
         <input type="hidden" id="productId" />
         <div class="form-grid">
-          <label class="full"
-            >Product name<input
+          <label class="full">
+            Product name
+            <input
               id="productName"
-              required=""
+              required
               maxlength="120"
-              placeholder="e.g. Wireless keyboard" /></label
-          ><label
-            >Category<input
+              placeholder="e.g. Wireless keyboard"
+            />
+          </label>
+          <label>
+            Category
+            <input
               id="productCategory"
-              required=""
+              required
               maxlength="80"
-              placeholder="e.g. Electronics" /></label
-          ><label
-            >Supplier<input
+              placeholder="e.g. Electronics"
+            />
+          </label>
+          <label>
+            Supplier
+            <input
               id="productSupplier"
-              required=""
+              required
               maxlength="120"
-              placeholder="Supplier name" /></label
-          ><label
-            >Quantity<input
+              placeholder="Supplier name"
+            />
+          </label>
+          <label>
+            Quantity
+            <input
               id="productQuantity"
-              required=""
+              required
               type="number"
               min="0"
-              step="1" /></label
-          ><label
-            >Unit price (₹)<input
+              step="1"
+            />
+          </label>
+          <label>
+            Unit price (₹)
+            <input
               id="productPrice"
-              required=""
+              required
               type="number"
               min="0"
               step="0.01"
-          /></label>
+            />
+          </label>
         </div>
         <p id="formError" class="error" role="alert"></p>
         <div class="dialog-actions">
           <button type="button" class="secondary" data-close="productDialog">
-            Cancel</button
-          ><button type="submit" class="primary">Save product</button>
+            Cancel
+          </button>
+          <button type="submit" class="primary">Save product</button>
         </div>
       </form>
     </dialog>
-    <!-- Stock form: increase or decrease quantity -->
+
+    <!-- A positive change receives stock; a negative change issues stock. -->
     <dialog id="stockDialog">
-      <form id="stockForm">
+      <form id="stockAdjustmentForm">
         <div class="panel-heading">
           <h2>Adjust stock</h2>
           <button
@@ -282,14 +308,17 @@
           </button>
         </div>
         <p id="stockName" class="muted"></p>
-        <input type="hidden" id="stockId" /><label
-          >Quantity change<input
+        <input type="hidden" id="stockId" />
+        <label>
+          Quantity change
+          <input
             type="number"
             id="stockChange"
             step="1"
-            required=""
+            required
             placeholder="e.g. 10 to add or -3 to remove"
-        /></label>
+          />
+        </label>
         <p class="muted">
           Use a positive number for stock in and a negative number for stock
           out.
@@ -297,19 +326,20 @@
         <p class="error" id="stockError" role="alert"></p>
         <div class="dialog-actions">
           <button type="button" class="secondary" data-close="stockDialog">
-            Cancel</button
-          ><button class="primary">Update stock</button>
+            Cancel
+          </button>
+          <button class="primary">Update stock</button>
         </div>
       </form>
     </dialog>
-    <!-- Confirmation: deletion, role change or logout -->
+
     <dialog id="confirmDialog">
       <h2 id="confirmTitle"></h2>
       <p id="confirmText" class="muted"></p>
       <p id="confirmError" class="error" role="alert"></p>
       <div class="dialog-actions">
-        <button id="confirmCancel" class="secondary">Cancel</button
-        ><button id="confirmAction" class="danger">Confirm</button>
+        <button id="confirmCancel" class="secondary">Cancel</button>
+        <button id="confirmAction" class="danger">Confirm</button>
       </div>
     </dialog>
   </body>

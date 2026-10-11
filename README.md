@@ -12,7 +12,7 @@ A responsive HTML/CSS/JavaScript frontend with a FastAPI + SQLite backend.
 
 ## Run with npm
 
-Open a terminal in the `inventory-app` folder (beside `package.json`), then run:
+Open a terminal in the `inventory-app-simple` folder (beside `package.json`), then run:
 
 ```powershell
 npm run setup
@@ -23,7 +23,7 @@ Open **http://127.0.0.1:8000/app/**. Keep the terminal running. These npm comman
 
 ## Run in VS Code on Windows
 
-1. Extract this ZIP and open the `inventory-app` folder in VS Code.
+1. Extract this ZIP and open the `inventory-app-simple` folder in VS Code.
 2. Open Terminal → New Terminal. Install Python 3.10 or newer if needed.
 3. Run:
 
@@ -46,7 +46,7 @@ python3 -m venv .venv
 .venv/bin/python -m uvicorn main:app --app-dir backend --reload
 ```
 
-## What changed
+## Features
 
 - Hidden hamburger navigation on desktop and mobile. Menu closes on selection, clicking the backdrop, or pressing Escape. Keyboard focus stays inside the open menu.
 - Summary cards, inventory value in rupees, stock health and restock priorities based on actual database data.
